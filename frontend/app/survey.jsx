@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import Checkbox from 'expo-checkbox';
 import JWT, { SupportedAlgorithms } from 'expo-jwt';
@@ -11,14 +10,15 @@ import { Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-nat
 export default function SurveyForm() {
   const [authToken, setAuthToken] = useState("");
   const [selectedAIModels, setSelectedAIModels] = useState([]);
+
   const navigation = useNavigation();
-  
   const AI_MODELS = ['ChatGPT', 'Bard', 'Claude', 'Copilot'];
 
   const formik = useFormik({
     initialValues: {
       name: '',
       surname: '',
+      // We take the date as a string (example: "2000-01-01")
       birthDate: 'e.g. 2000-01-01',
       educationLevel: '',
       city: '',
@@ -27,8 +27,9 @@ export default function SurveyForm() {
       useCase: '',
     },
     onSubmit: async (values) => {
+      // Remove any overriding of birthDate – we want to use what the user entered.
+      console.log("Submitting survey for user", values);
       let user_id = JWT.decode(authToken, 'secret_key', { algorithm: SupportedAlgorithms.HS256 });
-      console.log(user_id.user_id, values)
       try {
         const response = await fetch(`https://validsoftware458.com.tr:8443/survey/submit/${user_id.user_id}`, {
           method: 'POST',
@@ -40,7 +41,7 @@ export default function SurveyForm() {
 
         const data = await response.json();
         console.log('Server response:', data);
-        navigation.navigate('index')
+        navigation.navigate('index');
       } catch (error) {
         console.error('Error submitting survey:', error.message);
       }
@@ -48,26 +49,27 @@ export default function SurveyForm() {
   });
 
   useEffect(() => {
-    getData()
+    getData();
   }, []);
 
   const getData = async () => {
     try {
       const value = await AsyncStorage.getItem('auth_token');
-      console.log(value)
       if (value !== null) {
-        setAuthToken(value)
-        // value previously stored
+        setAuthToken(value);
       }
     } catch (e) {
-      console.log("Auth token not retrieved")
-      // error reading value
+      console.log('Auth token not retrieved');
     }
   };
 
   const handleAIModelChange = (model) => {
     setSelectedAIModels((prevModels) => {
       if (prevModels.includes(model)) {
+        formik.setFieldValue('defects', {
+          ...formik.values.defects,
+          [model]: '',
+        });
         return prevModels.filter((m) => m !== model);
       } else {
         return [...prevModels, model];
@@ -76,10 +78,10 @@ export default function SurveyForm() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.text}>Survey</Text>
+    <ScrollView contentContainerStyle={{ padding: 20 }}>
       <Text>Name:</Text>
       <TextInput
+        testID="inputName"
         style={styles.input}
         onChangeText={formik.handleChange('name')}
         value={formik.values.name}
@@ -87,6 +89,7 @@ export default function SurveyForm() {
 
       <Text>Surname:</Text>
       <TextInput
+        testID="inputSurname"
         style={styles.input}
         onChangeText={formik.handleChange('surname')}
         value={formik.values.surname}
@@ -94,13 +97,15 @@ export default function SurveyForm() {
 
       <Text>Birth Date (YYYY-MM-DD):</Text>
       <TextInput
+        testID="inputBirthDate"
         style={styles.input}
-        value={formik.values.birthDate}
         onChangeText={formik.handleChange('birthDate')}
+        value={formik.values.birthDate}
       />
 
       <Text>Education Level:</Text>
       <Picker
+        testID="pickerEducation"
         selectedValue={formik.values.educationLevel}
         onValueChange={formik.handleChange('educationLevel')}
       >
@@ -113,6 +118,7 @@ export default function SurveyForm() {
 
       <Text>City:</Text>
       <TextInput
+        testID="inputCity"
         style={styles.input}
         onChangeText={formik.handleChange('city')}
         value={formik.values.city}
@@ -120,6 +126,7 @@ export default function SurveyForm() {
 
       <Text>Gender:</Text>
       <Picker
+        testID="pickerGender"
         selectedValue={formik.values.gender}
         onValueChange={formik.handleChange('gender')}
       >
@@ -133,6 +140,7 @@ export default function SurveyForm() {
       {AI_MODELS.map((model) => (
         <View key={model} style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Checkbox
+            testID={`chk${model}`}
             value={selectedAIModels.includes(model)}
             onValueChange={() => handleAIModelChange(model)}
           />
@@ -144,6 +152,7 @@ export default function SurveyForm() {
         <View key={model}>
           <Text>Any defects or cons of {model}?</Text>
           <TextInput
+            testID={`inputDefectsCons${model}`}
             style={styles.input}
             onChangeText={(text) =>
               formik.setFieldValue('defects', { ...formik.values.defects, [model]: text })
@@ -155,15 +164,16 @@ export default function SurveyForm() {
 
       <Text>Any use case of AI that is beneficial in daily life:</Text>
       <TextInput
+        testID="inputUseCase"
         style={styles.input}
         onChangeText={formik.handleChange('useCase')}
         value={formik.values.useCase}
       />
 
-      <Button title="Submit" onPress={formik.handleSubmit} />
+      <Button testID="btnSubmit" title="Submit" onPress={formik.handleSubmit} />
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   input: {
@@ -186,4 +196,4 @@ const styles = StyleSheet.create({
     textAlign: "left",
     marginBottom: 20
   }
-})
+});
