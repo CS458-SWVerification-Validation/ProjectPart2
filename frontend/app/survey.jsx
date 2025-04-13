@@ -76,12 +76,24 @@ export default function SurveyForm() {
       }
     });
   };
+ /* ---------- helpers ---------- */
+  const isFuture = (yyyyMmDd) => {
+    const d = new Date(yyyyMmDd);
+    return !isNaN(d) && d > new Date();
+  };
 
+  const isSubmitDisabled =
+    !formik.values.name.trim() ||
+    !formik.values.surname.trim() ||
+    !formik.values.birthDate.trim() ||
+    !formik.values.city.trim() ||
+    isFuture(formik.values.birthDate);
   return (
     <ScrollView contentContainerStyle={{ padding: 20 }}>
       <Text>Name:</Text>
       <TextInput
         testID="inputName"
+        accessible accessibilityLabel="inputName"
         style={styles.input}
         onChangeText={formik.handleChange('name')}
         value={formik.values.name}
@@ -90,6 +102,8 @@ export default function SurveyForm() {
       <Text>Surname:</Text>
       <TextInput
         testID="inputSurname"
+                accessible accessibilityLabel="inputSurname"
+
         style={styles.input}
         onChangeText={formik.handleChange('surname')}
         value={formik.values.surname}
@@ -98,6 +112,8 @@ export default function SurveyForm() {
       <Text>Birth Date (YYYY-MM-DD):</Text>
       <TextInput
         testID="inputBirthDate"
+        accessible accessibilityLabel="inputBirthDate"
+
         style={styles.input}
         onChangeText={formik.handleChange('birthDate')}
         value={formik.values.birthDate}
@@ -106,6 +122,7 @@ export default function SurveyForm() {
       <Text>Education Level:</Text>
       <Picker
         testID="pickerEducation"
+        accessible accessibilityLabel="pickerEducation"
         selectedValue={formik.values.educationLevel}
         onValueChange={formik.handleChange('educationLevel')}
       >
@@ -119,6 +136,8 @@ export default function SurveyForm() {
       <Text>City:</Text>
       <TextInput
         testID="inputCity"
+                accessible accessibilityLabel="inputCity"
+
         style={styles.input}
         onChangeText={formik.handleChange('city')}
         value={formik.values.city}
@@ -127,6 +146,7 @@ export default function SurveyForm() {
       <Text>Gender:</Text>
       <Picker
         testID="pickerGender"
+        accessible accessibilityLabel="pickerGender"
         selectedValue={formik.values.gender}
         onValueChange={formik.handleChange('gender')}
       >
@@ -141,6 +161,8 @@ export default function SurveyForm() {
         <View key={model} style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Checkbox
             testID={`chk${model}`}
+            accessible
+            accessibilityLabel={`chk${model}`}
             value={selectedAIModels.includes(model)}
             onValueChange={() => handleAIModelChange(model)}
           />
@@ -153,6 +175,8 @@ export default function SurveyForm() {
           <Text>Any defects or cons of {model}?</Text>
           <TextInput
             testID={`inputDefectsCons${model}`}
+            accessible
+            accessibilityLabel={`inputDefectsCons${model}`}
             style={styles.input}
             onChangeText={(text) =>
               formik.setFieldValue('defects', { ...formik.values.defects, [model]: text })
@@ -165,12 +189,21 @@ export default function SurveyForm() {
       <Text>Any use case of AI that is beneficial in daily life:</Text>
       <TextInput
         testID="inputUseCase"
+                accessible accessibilityLabel="inputUseCase"
+
         style={styles.input}
         onChangeText={formik.handleChange('useCase')}
         value={formik.values.useCase}
       />
 
-      <Button testID="btnSubmit" title="Submit" onPress={formik.handleSubmit} />
+      <Button
+              testID="btnSubmit"
+              accessible
+              accessibilityLabel="btnSubmit"
+              title="Submit"
+              disabled={isSubmitDisabled}
+              onPress={formik.handleSubmit}
+      />
     </ScrollView>
   );
 }
