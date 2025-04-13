@@ -89,7 +89,8 @@ export default function SurveyForm() {
     !formik.values.city.trim() ||
     isFuture(formik.values.birthDate);
   return (
-    <ScrollView contentContainerStyle={{ padding: 20 }}>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.text}>Survey</Text>
       <Text>Name:</Text>
       <TextInput
         testID="inputName"
