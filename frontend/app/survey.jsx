@@ -3,43 +3,23 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import Checkbox from 'expo-checkbox';
 import JWT, { SupportedAlgorithms } from 'expo-jwt';
+import { useNavigation } from 'expo-router';
 import { useFormik } from 'formik';
 import React, { useEffect, useState } from 'react';
-import { Button, ScrollView, Text, TextInput, View } from 'react-native';
+import { Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function SurveyForm() {
   const [authToken, setAuthToken] = useState("");
   const [selectedAIModels, setSelectedAIModels] = useState([]);
-  const [date, setDate] = useState(new Date(1598051730000));
-  const [mode, setMode] = useState('date');
-  const [show, setShow] = useState(false);
+  const navigation = useNavigation();
   
   const AI_MODELS = ['ChatGPT', 'Bard', 'Claude', 'Copilot'];
-
-  const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate;
-    setShow(false);
-    setDate(currentDate);
-  };
-
-  const showMode = (currentMode) => {
-    setShow(true);
-    setMode(currentMode);
-  };
-
-  const showDatepicker = () => {
-    showMode('date');
-  };
-
-  const showTimepicker = () => {
-    showMode('time');
-  };
 
   const formik = useFormik({
     initialValues: {
       name: '',
       surname: '',
-      birthDate: new Date(),
+      birthDate: 'e.g. 2000-01-01',
       educationLevel: '',
       city: '',
       gender: '',
@@ -47,7 +27,6 @@ export default function SurveyForm() {
       useCase: '',
     },
     onSubmit: async (values) => {
-      values.birthDate = date
       let user_id = JWT.decode(authToken, 'secret_key', { algorithm: SupportedAlgorithms.HS256 });
       console.log(user_id.user_id, values)
       try {
@@ -61,6 +40,7 @@ export default function SurveyForm() {
 
         const data = await response.json();
         console.log('Server response:', data);
+        navigation.navigate('index')
       } catch (error) {
         console.error('Error submitting survey:', error.message);
       }
@@ -96,38 +76,35 @@ export default function SurveyForm() {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20 }}>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.text}>Survey</Text>
       <Text>Name:</Text>
       <TextInput
-        style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
+        style={styles.input}
         onChangeText={formik.handleChange('name')}
         value={formik.values.name}
       />
 
       <Text>Surname:</Text>
       <TextInput
-        style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
+        style={styles.input}
         onChangeText={formik.handleChange('surname')}
         value={formik.values.surname}
       />
 
-      <Text>Birth Date: {date.toLocaleString()}</Text>
-      <Button onPress={showDatepicker} title="Show date picker!" />
-      {show && (
-        <DateTimePicker
-          testID="dateTimePicker"
-          value={formik.values.birthDate}
-          mode={mode}
-          is24Hour={true}
-          onChange={onChange}
-        />
-      )}
+      <Text>Birth Date (YYYY-MM-DD):</Text>
+      <TextInput
+        style={styles.input}
+        value={formik.values.birthDate}
+        onChangeText={formik.handleChange('birthDate')}
+      />
 
       <Text>Education Level:</Text>
       <Picker
         selectedValue={formik.values.educationLevel}
         onValueChange={formik.handleChange('educationLevel')}
       >
+        <Picker.Item label="Choose One" value="" />
         <Picker.Item label="High School" value="high_school" />
         <Picker.Item label="Bachelor's Degree" value="bachelor" />
         <Picker.Item label="Master's Degree" value="master" />
@@ -136,7 +113,7 @@ export default function SurveyForm() {
 
       <Text>City:</Text>
       <TextInput
-        style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
+        style={styles.input}
         onChangeText={formik.handleChange('city')}
         value={formik.values.city}
       />
@@ -146,6 +123,7 @@ export default function SurveyForm() {
         selectedValue={formik.values.gender}
         onValueChange={formik.handleChange('gender')}
       >
+        <Picker.Item label="Choose One" value="" />
         <Picker.Item label="Male" value="male" />
         <Picker.Item label="Female" value="female" />
         <Picker.Item label="Other" value="other" />
@@ -166,7 +144,7 @@ export default function SurveyForm() {
         <View key={model}>
           <Text>Any defects or cons of {model}?</Text>
           <TextInput
-            style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
+            style={styles.input}
             onChangeText={(text) =>
               formik.setFieldValue('defects', { ...formik.values.defects, [model]: text })
             }
@@ -177,7 +155,7 @@ export default function SurveyForm() {
 
       <Text>Any use case of AI that is beneficial in daily life:</Text>
       <TextInput
-        style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
+        style={styles.input}
         onChangeText={formik.handleChange('useCase')}
         value={formik.values.useCase}
       />
@@ -186,3 +164,26 @@ export default function SurveyForm() {
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  input: {
+    borderWidth: 1,
+    padding: 8,
+    marginBottom: 10,
+    borderColor: '#ccc',
+    borderRadius: 5,
+  },
+  container: {
+    flex: 1,
+    flexDirection: "column",
+    padding: 20,
+    justifyContent: "center"
+  },
+  text: {
+    color: "black",
+    fontSize: 26,
+    fontWeight: "bold",
+    textAlign: "left",
+    marginBottom: 20
+  }
+})

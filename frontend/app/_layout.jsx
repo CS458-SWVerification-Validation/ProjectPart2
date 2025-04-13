@@ -33,7 +33,7 @@ export default function RootLayout() {
           {/*<Stack.Screen name="(tabs)" options={{ headerShown: false }} />*/}
           <Stack.Screen name='index' options={{title: 'Home', headerShown: false}} />
           <Stack.Screen name='auth' options={{title: 'Auth', headerShown: false}} />
-          <Stack.Screen name='survey' options={{title: 'Survey'}} />
+          <Stack.Screen name='survey' options={{title: 'Survey', headerShown: false}} />
           <Stack.Screen name="+not-found" />
         </Stack>
       <StatusBar style="auto" />
